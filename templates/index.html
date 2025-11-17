@@ -1,238 +1,226 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Swifty Share - File Sharing</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        background: #f3f4f6;
-        color: #111827;
-        padding: 20px;
-        max-width: 800px;
-        margin: auto;
-      }
-      h1 {
-        color: #4f46e5;
-      }
-      .container {
-        margin-bottom: 2rem;
-      }
-      .upload-section, .download-section {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(100,100,100,0.1);
-        margin-bottom: 2rem;
-      }
-      .progress-bar {
-        width: 100%;
-        background: #ddd;
-        border-radius: 5px;
-        overflow: hidden;
-        margin-top: 10px;
-      }
-      .progress-bar-fill {
-        height: 20px;
-        width: 0%;
-        background-color: #6366f1;
-        transition: width 0.25s ease-in-out;
-        color: white;
-        text-align: center;
-        line-height: 20px;
-        font-size: 12px;
-      }
-      input[type="text"], input[type="file"], button {
-        font-size: 1rem;
-        margin-top: 0.5rem;
-      }
-      input[type="file"] {
-        width: 100%;
-      }
-      button {
-        background-color: #4f46e5;
-        color: white;
-        border: none;
-        padding: 10px 15px;
-        border-radius: 5px;
-        cursor: pointer;
-        margin-top: 10px;
-      }
-      button:hover {
-        background-color: #6366f1;
-      }
-      .link-list {
-        margin-top: 15px;
-      }
-      .link-list a {
-        display: block;
-        margin-bottom: 5px;
-        color: #4f46e5;
-        text-decoration: none;
-        word-break: break-all;
-      }
-      .link-list a:hover {
-        text-decoration: underline;
-      }
-      .error-message {
-        color: #ef4444;
-      }
-      .success-message {
-        color: #10b981;
-        margin-top: 10px;
-      }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Swifty Share</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+      color: #111827;
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1 {
+      color: #4f46e5;
+    }
+    .container {
+      margin-bottom: 2rem;
+    }
+    .upload-section, .download-section {
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+    .progress-bar {
+      display: none;
+      width: 100%;
+      background: #ddd;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 20px;
+      width: 0%;
+      background-color: #6366f1;
+      transition: width 0.25s ease-in-out;
+      color: #fff;
+      line-height: 20px;
+      text-align: center;
+      font-size: 12px;
+    }
+    input[type="file"], input[type="text"], button {
+      font-size: 1rem;
+      margin-top: 0.5rem;
+    }
+    input[type="file"] {
+      width: 100%;
+    }
+    button {
+      background-color: #4f46e5;
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background-color: #6366f1;
+    }
+    .link-list {
+      margin-top: 15px;
+    }
+    .link-list a {
+      display: block;
+      margin-bottom: 5px;
+      color: #4f46e5;
+      text-decoration: none;
+      word-break: break-all;
+    }
+    .link-list a:hover {
+      text-decoration: underline;
+    }
+    .error-message {
+      color: #ef4444;
+    }
+    #timeEstimate {
+      margin-top: 8px;
+    }
+  </style>
 </head>
 <body>
-    <h1>Swifty Share</h1>
+<h1>Swifty Share</h1>
 
-    <div class="container upload-section">
-        <h2>Upload Files</h2>
-        <input type="file" id="fileInput" multiple />
-        <button id="uploadButton">Upload</button>
+<div class="container upload-section">
+  <h2>Upload Files</h2>
+  <input type="file" id="fileInput" multiple />
+  <button id="uploadButton">Upload</button>
+  <div class="progress-bar" id="progressContainer">
+    <div class="progress-bar-fill" id="progressBar"></div>
+  </div>
+  <div id="timeEstimate"></div>
+  <div class="link-list" id="uploadedLinks"></div>
+  <div class="error-message" id="uploadError"></div>
+</div>
 
-        <div class="progress-bar" id="progressBar" style="display:none;">
-            <div class="progress-bar-fill" id="progressBarFill">0%</div>
-        </div>
-        <div id="timeEstimate" style="margin-top: 8px;"></div>
+<div class="container download-section">
+  <h2>Download File</h2>
+  <label for="downloadLink">Paste your download link here:</label>
+  <input type="text" id="downloadLink" placeholder="Paste unique download link here" style="width: 100%;"/><br/><br/>
+  <button id="downloadButton">Download</button>
+  <div class="error-message" id="downloadError"></div>
+</div>
 
-        <div class="link-list" id="uploadedLinks"></div>
-        <div class="error-message" id="uploadError"></div>
-    </div>
+<script>
+const fileInput = document.getElementById('fileInput');
+const uploadButton = document.getElementById('uploadButton');
+const progressContainer = document.getElementById('progressContainer');
+const progressBar = document.getElementById('progressBar');
+const timeEstimate = document.getElementById('timeEstimate');
+const uploadedLinks = document.getElementById('uploadedLinks');
+const uploadError = document.getElementById('uploadError');
 
-    <div class="container download-section">
-        <h2>Download File</h2>
-        <label for="downloadLink">Paste your download link here:</label><br />
-        <input type="text" id="downloadLink" placeholder="Paste unique download link here" style="width: 100%;" />
-        <button id="downloadButton">Download</button>
-        <div class="error-message" id="downloadError"></div>
-    </div>
+uploadButton.onclick = () => {
+    uploadError.textContent = '';
+    uploadedLinks.innerHTML = '';
+    if (fileInput.files.length === 0) {
+        uploadError.textContent = 'Please select files to upload.';
+        return;
+    }
+    uploadFiles(fileInput.files);
+};
 
-    <script>
-        const fileInput = document.getElementById('fileInput');
-        const uploadButton = document.getElementById('uploadButton');
-        const progressBar = document.getElementById('progressBar');
-        const progressBarFill = document.getElementById('progressBarFill');
-        const timeEstimate = document.getElementById('timeEstimate');
-        const uploadedLinks = document.getElementById('uploadedLinks');
-        const uploadError = document.getElementById('uploadError');
+function uploadFiles(files) {
+    const xhr = new XMLHttpRequest();
+    const formData = new FormData();
+    for (const file of files) {
+        formData.append('files[]', file);
+    }
 
-        uploadButton.addEventListener('click', () => {
-            uploadError.textContent = '';
-            uploadedLinks.innerHTML = '';
-            if (fileInput.files.length === 0) {
-                uploadError.textContent = 'Please select at least one file to upload.';
-                return;
-            }
-            uploadFiles(fileInput.files);
-        });
+    xhr.open('POST', '/upload');
 
-        function uploadFiles(files) {
-            const xhr = new XMLHttpRequest();
-            const formData = new FormData();
+    // Show progress bar
+    progressContainer.style.display = 'block';
 
-            for (const file of files) {
-                formData.append('files[]', file);
-            }
+    xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+            const percent = Math.round((event.loaded / event.total) * 100);
+            progressBar.style.width = percent + '%';
+            progressBar.textContent = percent + '%';
 
-            xhr.open('POST', '/upload');
-
-            xhr.upload.onprogress = function (event) {
-                if (event.lengthComputable) {
-                    let percent = Math.floor((event.loaded / event.total) * 100);
-                    progressBar.style.display = 'block';
-                    progressBarFill.style.width = percent + '%';
-                    progressBarFill.textContent = percent + '%';
-
-                    const now = Date.now();
-                    if (!uploadFiles.startTime) {
-                        uploadFiles.startTime = now;
-                    }
-                    const elapsed = (now - uploadFiles.startTime) / 1000; // seconds
-                    const uploadSpeed = event.loaded / elapsed; // bytes per second
-                    const bytesRemaining = event.total - event.loaded;
-                    const secondsRemaining = bytesRemaining / uploadSpeed;
-
-                    timeEstimate.textContent = `Estimated time remaining: ${formatTime(secondsRemaining)}`;
-                }
-            };
-
-            xhr.onload = function () {
-                if (xhr.status === 200) {
-                    progressBarFill.style.width = '100%';
-                    progressBarFill.textContent = '100%';
-                    timeEstimate.textContent = 'Upload complete!';
-                    const response = JSON.parse(xhr.responseText);
-                    showLinks(response.links);
-                    uploadFiles.startTime = null;
-                } else {
-                    uploadError.textContent = `Upload failed: ${xhr.responseText}`;
-                    progressBar.style.display = 'none';
-                    timeEstimate.textContent = '';
-                    uploadFiles.startTime = null;
-                }
-            };
-
-            xhr.onerror = function () {
-                uploadError.textContent = 'An error occurred during the upload.';
-                progressBar.style.display = 'none';
-                timeEstimate.textContent = '';
-                uploadFiles.startTime = null;
-            };
-
-            xhr.send(formData);
+            const now = Date.now();
+            if (!uploadFiles.startTime) uploadFiles.startTime = now;
+            const elapsed = (now - uploadFiles.startTime) / 1000; // in seconds
+            const speed = event.loaded / elapsed; // bytes/sec
+            const remainingBytes = event.total - event.loaded;
+            const remainingSeconds = remainingBytes / speed;
+            document.getElementById('timeEstimate').textContent = 'Estimated time: ' + formatTime(remainingSeconds);
         }
+    };
 
-        function formatTime(seconds) {
-            seconds = Math.floor(seconds);
-            if (seconds < 60) {
-                return seconds + ' seconds';
-            } else {
-                const mins = Math.floor(seconds / 60);
-                const secs = seconds % 60;
-                return mins + ' minutes ' + secs + ' seconds';
-            }
+    xhr.onload = () => {
+        progressBar.style.width = '100%';
+        progressBar.textContent = '100%';
+        document.getElementById('timeEstimate').textContent = 'Upload complete!';
+        if (xhr.status === 200) {
+            const response = JSON.parse(xhr.responseText);
+            showLinks(response.links);
+        } else {
+            uploadError.textContent = 'Upload failed.';
         }
+        resetProgress();
+    };
 
-        function showLinks(links) {
-            uploadedLinks.innerHTML = '<strong>Download link(s):</strong>';
-            links.forEach(link => {
-                const a = document.createElement('a');
-                a.href = link;
-                a.textContent = window.location.origin + link;
-                a.target = '_blank';
-                uploadedLinks.appendChild(a);
-            });
+    xhr.onerror = () => {
+        uploadError.textContent = 'Error during upload.';
+        resetProgress();
+    };
+
+    xhr.send(formData);
+}
+
+function formatTime(seconds) {
+    seconds = Math.ceil(seconds);
+    if (seconds < 60) return seconds + ' sec';
+    const mins = Math.floor(seconds / 60);
+    const sec = seconds % 60;
+    return mins + ' min ' + sec + ' sec';
+}
+
+function showLinks(links) {
+    uploadedLinks.innerHTML = '<b>Links:</b>';
+    links.forEach(link => {
+        const a = document.createElement('a');
+        a.href = link;
+        a.target = '_blank';
+        a.textContent = window.location.origin + link;
+        uploadedLinks.appendChild(a);
+    });
+}
+
+function resetProgress() {
+    setTimeout(() => {
+        progressContainer.style.display = 'none';
+        progressBar.style.width = '0%';
+        progressBar.textContent = '';
+        document.getElementById('timeEstimate').textContent = '';
+        uploadFiles.startTime = null;
+    }, 2000);
+}
+
+// Download logic
+document.getElementById('downloadButton').onclick = () => {
+    const link = document.getElementById('downloadLink').value.trim();
+    if (!link) {
+        document.getElementById('downloadError').textContent = 'Paste a valid link.';
+        return;
+    }
+    try {
+        const url = new URL(link, window.location.origin);
+        if (!url.pathname.startsWith('/download')) {
+            document.getElementById('downloadError').textContent = 'Invalid link format.';
+            return;
         }
-
-        // Download button handling
-        const downloadButton = document.getElementById('downloadButton');
-        const downloadLinkInput = document.getElementById('downloadLink');
-        const downloadError = document.getElementById('downloadError');
-
-        downloadButton.addEventListener('click', () => {
-            downloadError.textContent = '';
-            const link = downloadLinkInput.value.trim();
-            if (!link) {
-                downloadError.textContent = 'Please paste a download link.';
-                return;
-            }
-
-            // Validate link format (basic)
-            try {
-                const url = new URL(link, window.location.origin);
-                if (!url.pathname.endsWith('/download')) {
-                    downloadError.textContent = 'Invalid download link format.';
-                    return;
-                }
-                // Redirect user to download URL
-                window.location.href = url.href;
-            } catch {
-                downloadError.textContent = 'Invalid URL format.';
-                return;
-            }
-        });
-    </script>
+        window.location.href = url.href;
+    } catch {
+        document.getElementById('downloadError').textContent = 'Invalid URL.';
+    }
+};
+</script>
 </body>
 </html>
