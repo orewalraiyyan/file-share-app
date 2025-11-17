@@ -1,192 +1,238 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Swifty Share</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-
-    :root {
-      --primary: #6366f1;
-      --primary-dark: #4f46e5;
-      --bg-light: #f3f4f6;
-      --bg-dark: #1e293b;
-      --text-light: #f9fafb;
-      --text-dark: #111827;
-      --shadow-light: #a5b4fc;
-      --shadow-dark: #2c3a64;
-      --radius: 15px;
-      --transition: 0.35s ease;
-      font-family: 'Inter', sans-serif;
-      font-size: clamp(15px, 1.2vw, 18px);
-      background: var(--bg-light);
-      color: var(--text-dark);
-      min-height: 100vh;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem 1rem;
-      box-sizing: border-box;
-    }
-    body[data-theme="dark"] {
-      background: var(--bg-dark);
-      color: var(--text-light);
-    }
-    h1 {
-      font-weight: 700;
-      font-size: clamp(2rem, 4vw, 2.75rem);
-      margin-bottom: 2rem;
-      color: var(--primary-dark);
-    }
-    h2 {
-      font-weight: 700;
-      margin-bottom: 1rem;
-      color: var(--primary);
-      font-size: clamp(1.4rem, 2vw, 1.8rem);
-    }
-    .container {
-      display: flex;
-      gap: 3rem;
-      max-width: 1000px;
-      width: 100%;
-      justify-content: center;
-      flex-wrap: wrap;
-      align-items: flex-start;
-    }
-    section {
-      background: var(--bg-light);
-      box-shadow:
-        8px 8px 20px var(--shadow-dark),
-        -8px -8px 20px var(--shadow-light);
-      padding: 2rem 2.5rem;
-      border-radius: var(--radius);
-      width: 400px;
-      box-sizing: border-box;
-      transition: background var(--transition), color var(--transition);
-    }
-    body[data-theme="dark"] section {
-      background: var(--bg-dark);
-      box-shadow:
-        8px 8px 20px #0d128a, 
-        -8px -8px 20px #6666ff;
-    }
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    input[type="file"] {
-      border: 2px dashed var(--primary);
-      border-radius: var(--radius);
-      padding: 1rem;
-      cursor: pointer;
-      font-weight: 600;
-      color: var(--primary-dark);
-      text-align: center;
-      background: transparent;
-      transition: background var(--transition), color var(--transition);
-    }
-    input[type="file"]:hover, input[type="file"]:focus {
-      background: var(--primary);
-      color: var(--text-light);
-      outline: none;
-    }
-    input[type="text"], input[type="url"] {
-      padding: 0.75rem 1rem;
-      border: 2px solid var(--primary);
-      border-radius: var(--radius);
-      font-size: 1rem;
-      font-weight: 600;
-      transition: border-color var(--transition);
-      width: 100%;
-      box-sizing: border-box;
-    }
-    input[type="text"]:focus, input[type="url"]:focus {
-      border-color: var(--primary-dark);
-      outline: none;
-    }
-    button {
-      background-color: var(--primary);
-      color: var(--text-light);
-      border: none;
-      padding: 0.75rem 1.25rem;
-      border-radius: var(--radius);
-      font-weight: 700;
-      font-size: 1.1rem;
-      cursor: pointer;
-      transition: background-color var(--transition);
-    }
-    button:hover, button:focus {
-      background-color: var(--primary-dark);
-      outline: none;
-    }
-    .output-link {
-      background: var(--primary-light);
-      padding: 1rem;
-      border-radius: var(--radius);
-      font-weight: 600;
-      word-wrap: break-word;
-      user-select: all;
-      color: var(--primary-dark);
-      border: 2px solid var(--primary);
-      margin-top: 1rem;
-    }
-    .error {
-      color: red;
-      font-weight: 700;
-      margin-top: 1rem;
-    }
-    @media (max-width: 900px) {
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Swifty Share - File Sharing</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f3f4f6;
+        color: #111827;
+        padding: 20px;
+        max-width: 800px;
+        margin: auto;
+      }
+      h1 {
+        color: #4f46e5;
+      }
       .container {
-        flex-direction: column;
-        align-items: center;
+        margin-bottom: 2rem;
       }
-      section {
-        width: calc(100vw - 4rem);
-        max-width: 400px;
+      .upload-section, .download-section {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(100,100,100,0.1);
+        margin-bottom: 2rem;
       }
-    }
-  </style>
+      .progress-bar {
+        width: 100%;
+        background: #ddd;
+        border-radius: 5px;
+        overflow: hidden;
+        margin-top: 10px;
+      }
+      .progress-bar-fill {
+        height: 20px;
+        width: 0%;
+        background-color: #6366f1;
+        transition: width 0.25s ease-in-out;
+        color: white;
+        text-align: center;
+        line-height: 20px;
+        font-size: 12px;
+      }
+      input[type="text"], input[type="file"], button {
+        font-size: 1rem;
+        margin-top: 0.5rem;
+      }
+      input[type="file"] {
+        width: 100%;
+      }
+      button {
+        background-color: #4f46e5;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 10px;
+      }
+      button:hover {
+        background-color: #6366f1;
+      }
+      .link-list {
+        margin-top: 15px;
+      }
+      .link-list a {
+        display: block;
+        margin-bottom: 5px;
+        color: #4f46e5;
+        text-decoration: none;
+        word-break: break-all;
+      }
+      .link-list a:hover {
+        text-decoration: underline;
+      }
+      .error-message {
+        color: #ef4444;
+      }
+      .success-message {
+        color: #10b981;
+        margin-top: 10px;
+      }
+    </style>
 </head>
 <body>
+    <h1>Swifty Share</h1>
 
-  <h1>Swifty Share</h1>
+    <div class="container upload-section">
+        <h2>Upload Files</h2>
+        <input type="file" id="fileInput" multiple />
+        <button id="uploadButton">Upload</button>
 
-  <div class="container">
+        <div class="progress-bar" id="progressBar" style="display:none;">
+            <div class="progress-bar-fill" id="progressBarFill">0%</div>
+        </div>
+        <div id="timeEstimate" style="margin-top: 8px;"></div>
 
-    <!-- Sender Section -->
-    <section aria-labelledby="upload-heading">
-      <h2 id="upload-heading">Upload a File</h2>
-      <form method="POST" enctype="multipart/form-data" aria-describedby="upload-desc">
-        <p id="upload-desc">Select your file below to upload and get a private shared link.</p>
-        <input type="file" name="file" required aria-required="true" />
-        <button type="submit" name="upload_file">Upload & Get Link</button>
-      </form>
-      {% if download_url %}
-      <div class="output-link" role="region" aria-live="polite" aria-atomic="true" tabindex="0">
-        <strong>Your unique download link:</strong>
-        <div><a href="{{ download_url }}" target="_blank" rel="noopener noreferrer">{{ download_url }}</a></div>
-        <small>Copy & share this exact link with your recipient.</small>
-      </div>
-      {% endif %}
-      {% if error %}
-        <div class="error" role="alert">{{ error }}</div>
-      {% endif %}
-    </section>
+        <div class="link-list" id="uploadedLinks"></div>
+        <div class="error-message" id="uploadError"></div>
+    </div>
 
-    <!-- Receiver Section -->
-    <section aria-labelledby="download-heading">
-      <h2 id="download-heading">Download a File</h2>
-      <form method="POST" aria-describedby="download-desc">
-        <p id="download-desc">Paste the unique download link you received below and click Download.</p>
-        <input type="url" name="download_link" placeholder="Enter full download URL" required aria-required="true" />
-        <button type="submit" name="download_link">Download</button>
-      </form>
-    </section>
+    <div class="container download-section">
+        <h2>Download File</h2>
+        <label for="downloadLink">Paste your download link here:</label><br />
+        <input type="text" id="downloadLink" placeholder="Paste unique download link here" style="width: 100%;" />
+        <button id="downloadButton">Download</button>
+        <div class="error-message" id="downloadError"></div>
+    </div>
 
-  </div>
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const uploadButton = document.getElementById('uploadButton');
+        const progressBar = document.getElementById('progressBar');
+        const progressBarFill = document.getElementById('progressBarFill');
+        const timeEstimate = document.getElementById('timeEstimate');
+        const uploadedLinks = document.getElementById('uploadedLinks');
+        const uploadError = document.getElementById('uploadError');
 
+        uploadButton.addEventListener('click', () => {
+            uploadError.textContent = '';
+            uploadedLinks.innerHTML = '';
+            if (fileInput.files.length === 0) {
+                uploadError.textContent = 'Please select at least one file to upload.';
+                return;
+            }
+            uploadFiles(fileInput.files);
+        });
+
+        function uploadFiles(files) {
+            const xhr = new XMLHttpRequest();
+            const formData = new FormData();
+
+            for (const file of files) {
+                formData.append('files[]', file);
+            }
+
+            xhr.open('POST', '/upload');
+
+            xhr.upload.onprogress = function (event) {
+                if (event.lengthComputable) {
+                    let percent = Math.floor((event.loaded / event.total) * 100);
+                    progressBar.style.display = 'block';
+                    progressBarFill.style.width = percent + '%';
+                    progressBarFill.textContent = percent + '%';
+
+                    const now = Date.now();
+                    if (!uploadFiles.startTime) {
+                        uploadFiles.startTime = now;
+                    }
+                    const elapsed = (now - uploadFiles.startTime) / 1000; // seconds
+                    const uploadSpeed = event.loaded / elapsed; // bytes per second
+                    const bytesRemaining = event.total - event.loaded;
+                    const secondsRemaining = bytesRemaining / uploadSpeed;
+
+                    timeEstimate.textContent = `Estimated time remaining: ${formatTime(secondsRemaining)}`;
+                }
+            };
+
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    progressBarFill.style.width = '100%';
+                    progressBarFill.textContent = '100%';
+                    timeEstimate.textContent = 'Upload complete!';
+                    const response = JSON.parse(xhr.responseText);
+                    showLinks(response.links);
+                    uploadFiles.startTime = null;
+                } else {
+                    uploadError.textContent = `Upload failed: ${xhr.responseText}`;
+                    progressBar.style.display = 'none';
+                    timeEstimate.textContent = '';
+                    uploadFiles.startTime = null;
+                }
+            };
+
+            xhr.onerror = function () {
+                uploadError.textContent = 'An error occurred during the upload.';
+                progressBar.style.display = 'none';
+                timeEstimate.textContent = '';
+                uploadFiles.startTime = null;
+            };
+
+            xhr.send(formData);
+        }
+
+        function formatTime(seconds) {
+            seconds = Math.floor(seconds);
+            if (seconds < 60) {
+                return seconds + ' seconds';
+            } else {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return mins + ' minutes ' + secs + ' seconds';
+            }
+        }
+
+        function showLinks(links) {
+            uploadedLinks.innerHTML = '<strong>Download link(s):</strong>';
+            links.forEach(link => {
+                const a = document.createElement('a');
+                a.href = link;
+                a.textContent = window.location.origin + link;
+                a.target = '_blank';
+                uploadedLinks.appendChild(a);
+            });
+        }
+
+        // Download button handling
+        const downloadButton = document.getElementById('downloadButton');
+        const downloadLinkInput = document.getElementById('downloadLink');
+        const downloadError = document.getElementById('downloadError');
+
+        downloadButton.addEventListener('click', () => {
+            downloadError.textContent = '';
+            const link = downloadLinkInput.value.trim();
+            if (!link) {
+                downloadError.textContent = 'Please paste a download link.';
+                return;
+            }
+
+            // Validate link format (basic)
+            try {
+                const url = new URL(link, window.location.origin);
+                if (!url.pathname.endsWith('/download')) {
+                    downloadError.textContent = 'Invalid download link format.';
+                    return;
+                }
+                // Redirect user to download URL
+                window.location.href = url.href;
+            } catch {
+                downloadError.textContent = 'Invalid URL format.';
+                return;
+            }
+        });
+    </script>
 </body>
 </html>
