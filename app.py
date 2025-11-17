@@ -1,13 +1,15 @@
 import os
 import uuid
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash, abort
+import time
+from flask import Flask, render_template, request, jsonify, send_from_directory, abort
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key_here'  # Replace with secure key
+
+app.secret_key = 'your_secret_key_here'  # Replace securely
 
 UPLOAD_FOLDER = 'uploads'
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'mp3', 'zip', 'rar'}
-MAX_FILE_SIZE = 100 * 1024 * 1024  # 100MB max limit
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'mp3', 'zip', 'rar', 'apk'}
+MAX_FILE_SIZE = 3 * 1024 * 1024 * 1024  # 3GB max limit
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
@@ -20,49 +22,54 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/')
 def home():
-    download_url = None
-    error = None
-    filename_to_show = None
-    if request.method == 'POST':
-        if 'upload_file' in request.form:
-            # Handle file upload (Sender)
-            if 'file' not in request.files:
-                error = 'No file part'
-            else:
-                file = request.files['file']
-                if file.filename == '':
-                    error = 'No file selected'
-                elif file and allowed_file(file.filename):
-                    original = file.filename
-                    unique_id = uuid.uuid4().hex
-                    stored_name = f"{unique_id}_{original}"
-                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], stored_name))
-                    download_url = url_for('download_file', filename=stored_name, _external=True)
-                    filename_to_show = original
-                else:
-                    error = 'File type not allowed'
-
-        elif 'download_link' in request.form:
-            # Handle link paste (Receiver)
-            link = request.form.get('download_link').strip()
-            if not link:
-                error = 'Please paste a valid download link'
-            else:
-                return redirect(link)
-
-    return render_template('index.html', download_url=download_url, filename=filename_to_show, error=error)
+    # Render homepage with upload and download forms
+    return render_template('index.html')
 
 
-@app.route('/files/<filename>')
-def download_file(filename):
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    if os.path.exists(file_path):
-        return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
-    else:
-        abort(404)
+@app.route('/upload', methods=['POST'])
+def upload_files():
+    if 'files[]' not in request.files:
+        return jsonify({'error': 'No files part in the request'}), 400
+
+    files = request.files.getlist('files[]')
+    if not files:
+        return jsonify({'error': 'No files selected for uploading'}), 400
+
+    links = []
+
+    for file in files:
+        if file and allowed_file(file.filename):
+            # Secure filename if needed here
+            unique_id = str(uuid.uuid4())
+            filename = f"{unique_id}_{file.filename}"
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(file_path)
+            download_link = f"/download?file_id={unique_id}&filename={file.filename}"
+            links.append(download_link)
+        else:
+            return jsonify({'error': f'File type not allowed: {file.filename}'}), 400
+
+    return jsonify({'links': links})
+
+
+@app.route('/download')
+def download_file():
+    file_id = request.args.get('file_id')
+    original_filename = request.args.get('filename')
+
+    if not file_id or not original_filename:
+        abort(400, "Invalid download link")
+
+    # Find matching file with pattern
+    for stored_file in os.listdir(app.config['UPLOAD_FOLDER']):
+        if stored_file.startswith(file_id + '_') and stored_file.endswith(original_filename):
+            return send_from_directory(app.config['UPLOAD_FOLDER'], stored_file, as_attachment=True)
+
+    abort(404, "File not found")
 
 
 if __name__ == '__main__':
     app.run(debug=True)
+    
